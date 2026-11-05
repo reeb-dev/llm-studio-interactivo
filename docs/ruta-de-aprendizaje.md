@@ -43,6 +43,29 @@ Un RAG de producción tiene cuatro etapas: ingesta/versionado, chunking con meta
 
 Empezá por búsqueda lexical con preguntas doradas. Introducí retrieval híbrido sólo cuando haya brechas semánticas demostrables. Medí `hit@k`, MRR, validez de citas y la tasa de `evidence-fallback`.
 
+## Self-RAG: recuperación con crítica antes de responder
+
+Self-RAG no es “RAG con otro prompt”. Incorpora decisiones y controles explícitos entre recuperar y publicar la respuesta:
+
+1. Decidir si la consulta requiere evidencia externa o del corpus.
+2. Recuperar fragmentos con `id`, versión y metadatos de aislamiento (tenant, permisos, fecha).
+3. Delimitar cada fragmento como dato no confiable; nunca como instrucción.
+4. Generar un borrador con citas estructuradas.
+5. Criticar el borrador: ¿hay evidencia?, ¿cada cita pertenece al retrieval?, ¿falta soporte?, ¿hay contradicción?
+6. Publicar sólo si pasa los controles; de lo contrario usar `evidence-fallback` y registrar el motivo.
+
+El endpoint `POST /api/self-rag/review` del proyecto implementa un verificador **estructural**: rechaza falta de evidencia, falta de citas y citas que no llegaron en el retrieval. No afirma demostrar verdad semántica; para eso hacen falta una rúbrica, casos dorados y revisión humana proporcional al riesgo.
+
+### Pruebas mínimas para Self-RAG
+
+- Sin evidencia → `evidence-fallback`.
+- Con evidencia pero sin citas → `evidence-fallback`.
+- Con cita fuera del conjunto recuperado → `evidence-fallback`.
+- Con cita presente en el conjunto recuperado → respuesta estructuralmente grounded.
+- Con una instrucción maliciosa dentro de un fragmento → se trata como texto, no modifica las políticas del sistema.
+
+Medí cobertura de citas, tasa de fallback, precisión de la crítica contra un set dorado y falsos positivos/falsos negativos del crítico. Versioná prompt, corpus, retrieval y rúbrica para comparar resultados.
+
 ## Frontend Angular
 
 Angular consume contratos, no aplica seguridad de negocio. Modelá en la UI los estados `idle`, `loading`, `success`, `empty` y `error`; usá formularios reactivos, servicios HTTP tipados y un interceptor para el token. Un guard mejora UX, pero el backend sigue siendo el único que autoriza.
@@ -51,6 +74,6 @@ Angular consume contratos, no aplica seguridad de negocio. Modelá en la UI los 
 
 - Cada endpoint crítico define autenticación, autorización, timeout, idempotencia y trazabilidad.
 - Cada mensaje tiene ID, contrato versionado, consumidor idempotente y estrategia de reintento/DLQ.
-- El RAG limita el corpus, cita evidencia y tiene evaluación repetible.
+- RAG y Self-RAG limitan el corpus, delimitan fuentes no confiables, validan citas y tienen evaluación repetible.
 - Prompt, modelo, corpus y herramientas se versionan y se miden en producción.
 - El frontend expone errores recuperables y no almacena secretos.

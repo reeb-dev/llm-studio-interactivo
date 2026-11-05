@@ -31,6 +31,13 @@
               <output>{{ feedback() }}</output>
             </section>
           } @else { <p class="todo">Reto de este módulo pendiente de cargar en la API. La estructura ya admite agregarlo sin cambiar el frontend.</p> }
+          @if (module.id === 'self-rag') {
+            <section class="challenge">
+              <h3>Verificador Self-RAG</h3>
+              <p>Probá una respuesta con evidencia recuperada y otra sin citas. La API decide si puede mostrarse o debe hacer <code>evidence-fallback</code>.</p>
+              <div class="answers"><button (click)="reviewSelfRag(true)">Revisar con cita válida</button><button (click)="reviewSelfRag(false)">Revisar sin citas</button></div>
+            </section>
+          }
         </article>
       }
     </section>

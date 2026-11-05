@@ -14,7 +14,7 @@ cd backend && mvn spring-boot:run
 cd frontend && npm start
 ```
 
-La UI queda en `http://localhost:4200` y la API en `http://localhost:8080`. GitHub Pages compila y publica el frontend; para producción, el `baseUrl` de Angular deberá apuntar a un host real de Spring Boot, ya que Pages no ejecuta Java.
+La UI queda en `http://localhost:4200` y la API en `http://localhost:8080`. GitHub Pages publica el laboratorio estático de `dist/`; no compila ni ejecuta `frontend/` o `backend/`. Para publicar la aplicación Angular real, el `baseUrl` deberá apuntar a un host real de Spring Boot y el workflow deberá generar `frontend/dist/`.
 
 ## Versión estática previa
 
@@ -26,7 +26,7 @@ Abrí `http://localhost:8000`.
 
 ## Ruta de aprendizaje
 
-La aplicación incluye 17 laboratorios interactivos. Cada uno presenta una decisión de diseño, una implementación mínima, fallos observables y un criterio de aceptación.
+La aplicación incluye 18 laboratorios interactivos. Cada uno presenta una decisión de diseño, una implementación mínima, fallos observables y un criterio de aceptación.
 
 1. Arquitectura de un sistema LLM
 2. Contexto, prompts y memoria
@@ -45,6 +45,7 @@ La aplicación incluye 17 laboratorios interactivos. Cada uno presenta una decis
 15. UPSERT y claves naturales
 16. Saga Pattern
 17. Angular para frontend confiable
+18. Self-RAG: recuperar, criticar y responder con evidencia
 
 Leé la [guía de patrones y prácticas](/docs/ruta-de-aprendizaje.md) antes de implementar un flujo real.
 
