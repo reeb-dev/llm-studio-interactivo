@@ -20,17 +20,21 @@
         <article class="lab">
           <span class="eyebrow">{{ module.category }}</span>
           <h2>{{ module.title }}</h2>
-          <p>Este módulo se sirve desde la API Spring y su reto se valida del lado del servidor. El resultado correcto persiste por learner en H2.</p>
+          <p>{{ module.objective }}</p>
           <div class="contract"><strong>Contrato API</strong><code>GET /api/modules · POST /api/challenges/validate · PUT /api/progress</code></div>
-          @if (challengeFor(module.id); as challenge) {
-            <section class="challenge">
-              <h3>Mini-reto</h3><p>{{ challenge.question }}</p>
-              <div class="answers">
-                @for (option of challenge.options; track option; let index = $index) { <button (click)="answer(index)">{{ option }}</button> }
-              </div>
-              <output>{{ feedback() }}</output>
-            </section>
-          }
+          <section class="learning-loop" aria-label="Guía de práctica">
+            <div><strong>Antes de empezar</strong><p>{{ module.prerequisites.join(' · ') }}</p></div>
+            <div><strong>Práctica guiada</strong><p>{{ module.practice }}</p></div>
+            <div><strong>Criterio de aceptación</strong><p>{{ module.acceptance }}</p></div>
+            <div><strong>Reflexión</strong><p>{{ module.reflection }}</p></div>
+          </section>
+          <section class="challenge">
+            <h3>Chequeo de comprensión</h3><p>{{ module.challenge.question }}</p>
+            <div class="answers">
+              @for (option of module.challenge.options; track option; let index = $index) { <button (click)="answer(index)">{{ option }}</button> }
+            </div>
+            <output aria-live="polite">{{ feedback() }}</output>
+          </section>
           @if (module.id === 'self-rag') {
             <section class="challenge">
               <h3>Verificador Self-RAG</h3>

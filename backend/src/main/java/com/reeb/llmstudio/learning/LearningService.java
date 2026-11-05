@@ -2,7 +2,6 @@ package com.reeb.llmstudio.learning;
 
 import jakarta.annotation.PostConstruct;
 import java.util.List;
-import java.util.Map;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,13 +11,6 @@ public class LearningService {
   private final ModuleRepository modules;
   private final ProgressRepository progress;
   private final SelfRagVerifier selfRagVerifier;
-  private final Map<String, Integer> correctOptions = Map.ofEntries(
-      Map.entry("architecture", 1), Map.entry("context", 1), Map.entry("rag", 1),
-      Map.entry("tools", 1), Map.entry("jwt", 1), Map.entry("idempotency", 1),
-      Map.entry("outbox", 0), Map.entry("resilience", 1), Map.entry("observability", 0),
-      Map.entry("evals", 1), Map.entry("security", 1), Map.entry("performance", 1),
-      Map.entry("inbox", 1), Map.entry("optimistic", 0), Map.entry("upsert", 1),
-      Map.entry("saga", 1), Map.entry("angular", 1), Map.entry("self-rag", 1));
   LearningService(ModuleRepository modules, ProgressRepository progress, SelfRagVerifier selfRagVerifier) { this.modules=modules; this.progress=progress; this.selfRagVerifier=selfRagVerifier; }
   @PostConstruct void seed() {
     if (modules.count() > 0) return;
@@ -55,9 +47,22 @@ public class LearningService {
         new LearningModule("ai-capstone", "Proyecto integrador de IA", "proyecto", 30)
     ).forEach(modules::save);
   }
-  @Transactional(readOnly = true) public List<LearningDtos.ModuleResponse> modules() { return modules.findAllByOrderByPositionAsc().stream().map(m -> new LearningDtos.ModuleResponse(m.getId(),m.getTitle(),m.getCategory(),m.getPosition())).toList(); }
+  @Transactional(readOnly = true) public List<LearningDtos.ModuleResponse> modules() {
+    return modules.findAllByOrderByPositionAsc().stream().map(module -> {
+      var lesson = LearningCurriculum.forId(module.getId());
+      return new LearningDtos.ModuleResponse(module.getId(), module.getTitle(), module.getCategory(), module.getPosition(),
+          lesson.objective(), lesson.prerequisites(), lesson.practice(), lesson.acceptance(), lesson.reflection(),
+          new LearningDtos.Challenge(lesson.question(), lesson.options()));
+    }).toList();
+  }
   @Transactional(readOnly = true) public LearningDtos.ProgressResponse progress(String learnerId) { return new LearningDtos.ProgressResponse(learnerId, progress.findAllByLearnerIdAndCompletedTrue(learnerId).stream().map(LearningProgress::getModuleId).toList()); }
   public LearningDtos.ProgressResponse complete(LearningDtos.CompleteModuleRequest request) { var item=progress.findByLearnerIdAndModuleId(request.learnerId(), request.moduleId()).orElseGet(() -> new LearningProgress(request.learnerId(),request.moduleId(),false)); item.complete(); progress.save(item); return progress(request.learnerId()); }
-  @Transactional(readOnly = true) public LearningDtos.ChallengeResponse validate(LearningDtos.ChallengeRequest request) { boolean ok=correctOptions.getOrDefault(request.moduleId(), 1).equals(request.selectedOption()); return new LearningDtos.ChallengeResponse(ok, ok ? "Correcto: podés marcar el módulo." : "Todavía no: revisá la decisión de diseño y probá otra vez."); }
+  @Transactional(readOnly = true) public LearningDtos.ChallengeResponse validate(LearningDtos.ChallengeRequest request) {
+    var lesson = LearningCurriculum.forId(request.moduleId());
+    boolean ok = lesson.correct() == request.selectedOption();
+    return new LearningDtos.ChallengeResponse(ok,
+        ok ? "Correcto: podés marcar el módulo." : "Todavía no: compará la decisión con el criterio de aceptación.",
+        ok ? lesson.correctExplanation() : lesson.incorrectExplanation(), lesson.nextStep());
+  }
   @Transactional(readOnly = true) public LearningDtos.SelfRagReviewResponse reviewSelfRag(LearningDtos.SelfRagReviewRequest request) { return selfRagVerifier.review(request); }
 }

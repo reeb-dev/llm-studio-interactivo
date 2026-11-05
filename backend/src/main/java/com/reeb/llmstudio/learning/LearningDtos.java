@@ -7,11 +7,22 @@ import java.util.List;
 
 public final class LearningDtos {
   private LearningDtos() { }
-  public record ModuleResponse(String id, String title, String category, int position) { }
+  public record ModuleResponse(
+      String id,
+      String title,
+      String category,
+      int position,
+      String objective,
+      List<String> prerequisites,
+      String practice,
+      String acceptance,
+      String reflection,
+      Challenge challenge) { }
+  public record Challenge(String question, List<String> options) { }
   public record ProgressResponse(String learnerId, List<String> completedModuleIds) { }
   public record CompleteModuleRequest(@NotBlank String learnerId, @NotBlank String moduleId) { }
   public record ChallengeRequest(@NotBlank String moduleId, @NotNull Integer selectedOption) { }
-  public record ChallengeResponse(boolean correct, String feedback) { }
+  public record ChallengeResponse(boolean correct, String feedback, String explanation, String nextStep) { }
   public record Evidence(@NotBlank String id, @NotBlank String content) { }
   public record SelfRagReviewRequest(
       @NotBlank String answer,

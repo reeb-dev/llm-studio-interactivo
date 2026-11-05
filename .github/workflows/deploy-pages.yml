@@ -27,6 +27,8 @@ jobs:
         uses: actions/configure-pages@v5
         with:
           enablement: true
+      - name: Version static assets
+        run: sed -i "s|./app.js|./app.js?v=${GITHUB_SHA}|" dist/index.html
       - name: Upload static site
         uses: actions/upload-pages-artifact@v3
         with:

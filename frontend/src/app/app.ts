@@ -1,8 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { LearningApi, LearningModule } from './learning-api';
 
-type Challenge = { question: string; options: string[]; correct: number };
-
 @Component({
   selector: 'app-root',
   templateUrl: './app.html',
@@ -21,27 +19,6 @@ export class App {
   protected readonly ragResult = signal('Consultá el corpus del laboratorio para ver evidencia y citas.');
   protected readonly progress = computed(() => `${this.completed().size} / ${this.modules().length || 0}`);
 
-  protected readonly challenges: Record<string, Challenge> = {
-    architecture: { question: '¿Quién ejecuta una acción con efecto real?', options: ['El navegador', 'El backend validado', 'El modelo'], correct: 1 },
-    context: { question: '¿Cuál es una memoria segura por defecto?', options: ['Historial infinito', 'Resumen con TTL y consentimiento', 'Guardar secretos en el prompt'], correct: 1 },
-    rag: { question: '¿Qué pasa si no hay evidencia recuperada?', options: ['Se inventa una respuesta', 'Se usa evidence-fallback', 'Se expande el prompt'], correct: 1 },
-    tools: { question: '¿Qué valida los argumentos de una herramienta?', options: ['El modelo', 'El schema y el backend', 'El texto del usuario'], correct: 1 },
-    jwt: { question: '¿Qué demuestra la firma de un JWT?', options: ['Que el payload es secreto', 'Que no fue alterado', 'Que tiene todos los permisos'], correct: 1 },
-    idempotency: { question: '¿Qué devuelve una repetición con la misma key?', options: ['Un recurso nuevo', 'El resultado guardado', 'Un 500'], correct: 1 },
-    outbox: { question: '¿Cuándo se registra un evento de outbox?', options: ['En la transacción de la entidad', 'Después de publicar', 'Sólo si falla el relay'], correct: 0 },
-    resilience: { question: '¿Cuándo es seguro reintentar?', options: ['Siempre', 'Ante un fallo transitorio y operación segura', 'Nunca'], correct: 1 },
-    observability: { question: '¿Qué permite reconstruir una respuesta?', options: ['Un traceId entre capas', 'Sólo un error log', 'El navegador'], correct: 0 },
-    evals: { question: '¿Cómo aislás un problema de retrieval?', options: ['Evaluando todo junto', 'Midiendo retrieval y respuesta por separado', 'Cambiando el modelo'], correct: 1 },
-    security: { question: '¿Cómo se trata un fragmento recuperado?', options: ['Como instrucción', 'Como dato no confiable delimitado', 'Como secreto'], correct: 1 },
-    performance: { question: '¿Qué debe incluir una cache key?', options: ['Sólo la pregunta', 'Tenant, permisos y versiones', 'Sólo el modelo'], correct: 1 },
-    inbox: { question: '¿Qué evita duplicar el efecto de un evento?', options: ['ACK temprano', 'eventId único en inbox', 'Más consumidores'], correct: 1 },
-    optimistic: { question: '¿Qué señala un conflicto optimista?', options: ['0 filas actualizadas por versión', 'Servidor lento', 'Falta una cola'], correct: 0 },
-    upsert: { question: '¿Qué identidad conviene para sincronizar un catálogo?', options: ['Nombre visible', 'externalId estable con índice único', 'Timestamp'], correct: 1 },
-    saga: { question: '¿Qué hace una compensación?', options: ['Rollback distribuido', 'Revierte un paso de negocio', 'Borra logs'], correct: 1 },
-    angular: { question: '¿Dónde se autoriza una operación?', options: ['Angular guard', 'Backend', 'Local storage'], correct: 1 },
-    'self-rag': { question: 'Si las citas no pertenecen a la evidencia recuperada, ¿qué debe hacer el sistema?', options: ['Responder igual', 'Usar evidence-fallback', 'Inventar una cita válida'], correct: 1 }
-  };
-
   constructor() { this.load(); }
 
   protected select(module: LearningModule): void {
@@ -54,7 +31,7 @@ export class App {
     if (!module) return;
     this.api.validate(module.id, index).subscribe({
       next: result => {
-        this.feedback.set(result.feedback);
+        this.feedback.set(`${result.feedback} ${result.explanation} Siguiente paso: ${result.nextStep}`);
         if (result.correct) this.complete(module.id);
       },
       error: () => this.feedback.set('No se pudo validar el reto. Revisá que Spring Boot esté activo en :8080.')
@@ -86,14 +63,6 @@ export class App {
         'Motivo: ' + answer.reasons.join(' ')),
       error: () => this.ragResult.set('No se pudo consultar RAG. Verificá Spring Boot en :8080.')
     });
-  }
-
-  protected challengeFor(moduleId: string): Challenge {
-    return this.challenges[moduleId] ?? {
-      question: '¿Qué práctica vuelve este componente verificable y mantenible?',
-      options: ['Confiar en resultados visuales', 'Definir contrato, prueba y métrica', 'Ocultar los errores'],
-      correct: 1
-    };
   }
 
   private load(): void {

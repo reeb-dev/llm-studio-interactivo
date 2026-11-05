@@ -1,9 +1,14 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 
-export interface LearningModule { id: string; title: string; category: string; position: number; }
+export interface Challenge { question: string; options: string[]; }
+export interface LearningModule {
+  id: string; title: string; category: string; position: number;
+  objective: string; prerequisites: string[]; practice: string; acceptance: string; reflection: string;
+  challenge: Challenge;
+}
 export interface Progress { learnerId: string; completedModuleIds: string[]; }
-export interface ChallengeResult { correct: boolean; feedback: string; }
+export interface ChallengeResult { correct: boolean; feedback: string; explanation: string; nextStep: string; }
 export interface SelfRagReview { grounded: boolean; answer: string; validCitations: string[]; reasons: string[]; }
 export interface RagAnswer {
   answer: string; grounded: boolean; evidence: { id: string; content: string }[];
