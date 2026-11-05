@@ -62,6 +62,7 @@ La aplicación incluye 30 laboratorios interactivos. Cada uno presenta una decis
 Leé la [guía de patrones y prácticas](/docs/ruta-de-aprendizaje.md) antes de implementar un flujo real.
 Para el recorrido completo, usá el [temario ampliado de IA](/docs/temario-ia.md).
 Para estudiar cada bloque con práctica y evidencia, seguí la [guía didáctica](/docs/GUIA-DIDACTICA.md).
+Las referencias por módulo y su tipo de respaldo están en [fuentes verificables](/docs/FUENTES-OFICIALES.md).
 
 ## Entorno con PostgreSQL y JWT
 
