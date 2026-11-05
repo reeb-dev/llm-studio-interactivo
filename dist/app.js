@@ -98,6 +98,9 @@ $('#clear-events').onclick=()=>{events=[];$('#events').innerHTML='<div class="ev
 const interactiveStyle=document.createElement('style');
 interactiveStyle.textContent='.code-editor{width:100%;min-height:310px;resize:vertical;border:0;margin:0;padding:16px;background:#0b0f18;color:#d9e0ec;font:12px/1.75 DM Mono,monospace;tab-size:2;outline:0}.editor-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:11px}.editor-actions button{border:1px solid #39445b;background:#182031;color:#dce4ef;border-radius:6px;padding:8px 10px;font:700 10px Manrope;cursor:pointer}.editor-actions button.primary{background:var(--lime);border-color:var(--lime);color:#11170c}.test-result{margin-top:11px;font:11px/1.6 DM Mono,monospace;border:1px solid #30384c;border-radius:6px;padding:10px;color:#bac4d5}.test-result.good{border-color:#55773a;color:#c9ed97}.test-result.bad{border-color:#845d37;color:#ffca91}.contract-list{display:grid;gap:8px;margin:15px 0}.contract-list div{background:#121723;border:1px solid #292f40;border-radius:7px;padding:11px}.contract-list strong{display:block;font:10px DM Mono,monospace;color:var(--blue);margin-bottom:4px}.contract-list span{font-size:12px;color:#b8c0d0;line-height:1.45}';
 document.head.append(interactiveStyle);
+const navigationStyle=document.createElement('style');
+navigationStyle.textContent='.explorer{height:100vh;overflow-y:auto;padding-bottom:120px}.progress-card{position:sticky;bottom:17px;margin-top:18px;z-index:2}';
+document.head.append(navigationStyle);
 const lessonSelect=select;
 let activeSource='controller';
 const sourceFiles={
@@ -114,7 +117,7 @@ const sourceFiles={
 function projectNav(){
   const files=ids=>ids.map(id=>{const f=sourceFiles[id];return '<button class="lesson '+(activeSource===id?'active':'')+'" data-source="'+id+'"><span class="file">⌘</span>'+f.file+'</button>'}).join('');
   const docs=lessons.map((l,i)=>'<button class="lesson" data-lesson="'+l.id+'"><span class="file">'+(i?'·':'◇')+'</span>'+l.file+(completed.has(l.id)?'<span class="check">✓</span>':'')+'</button>').join('');
-  $('#lesson-list').innerHTML='<div class="folder-name" style="margin-top:10px">⌄ &nbsp; backend</div><div style="padding-left:12px"><div class="folder-name">⌄ src / main</div>'+files(['controller','service','module','selfrag','cors'])+'</div><div class="folder-name" style="margin-top:14px">⌄ &nbsp; frontend</div><div style="padding-left:12px"><div class="folder-name">⌄ src / app</div>'+files(['app','api','interceptor','config'])+'</div><div class="folder-name" style="margin-top:14px">⌄ &nbsp; docs</div><div style="padding-left:12px">'+docs+'</div>';
+  $('#lesson-list').innerHTML='<div class="folder-name" style="margin-top:10px">⌄ &nbsp; RUTA DIDÁCTICA · EMPEZÁ ACÁ</div><div style="padding-left:12px">'+docs+'</div><div class="folder-name" style="margin-top:18px">⌄ &nbsp; CÓDIGO DEL PROYECTO</div><div style="padding-left:12px"><div class="folder-name">⌄ backend / src / main</div>'+files(['controller','service','module','selfrag','cors'])+'</div><div style="padding-left:12px"><div class="folder-name" style="margin-top:14px">⌄ frontend / src / app</div>'+files(['app','api','interceptor','config'])+'</div>';
   document.querySelectorAll('[data-source]').forEach(b=>b.onclick=()=>openSource(b.dataset.source));
   document.querySelectorAll('[data-lesson]').forEach(b=>b.onclick=()=>{activeSource='';lessonSelect(b.dataset.lesson)});
   $('#progress-count').textContent=completed.size;$('#progress-total').textContent=lessons.length;$('#progress-bar').style.width=(completed.size/lessons.length*100)+'%';
@@ -154,4 +157,4 @@ function openSource(id){
   $('#reset-code').onclick=()=>{editor.value=f.code;report('Archivo del sandbox restaurado; el repositorio no fue modificado.',true)};
   log('Archivo abierto: '+f.path+'/'+f.file);
 }
-openSource(activeSource);
+select('architecture');
