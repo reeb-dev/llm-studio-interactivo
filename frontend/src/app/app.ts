@@ -17,6 +17,8 @@ export class App {
   protected readonly loading = signal(true);
   protected readonly feedback = signal('Elegí una respuesta para validar el reto contra la API.');
   protected readonly status = signal('Conectando con Spring Boot…');
+  protected readonly ragQuestion = signal('¿Cómo funcionan los reintentos?');
+  protected readonly ragResult = signal('Consultá el corpus del laboratorio para ver evidencia y citas.');
   protected readonly progress = computed(() => `${this.completed().size} / ${this.modules().length || 0}`);
 
   protected readonly challenges: Record<string, Challenge> = {
@@ -71,6 +73,27 @@ export class App {
       next: review => this.feedback.set(`${review.grounded ? 'Grounded' : 'Evidence fallback'}: ${review.answer} · ${review.reasons.join(' ')}`),
       error: () => this.feedback.set('No se pudo revisar Self-RAG. Verificá que Spring Boot esté activo en :8080.')
     });
+  }
+
+  protected setRagQuestion(question: string): void { this.ragQuestion.set(question); }
+
+  protected askRag(): void {
+    this.ragResult.set('Buscando evidencia en el corpus…');
+    this.api.askRag(this.ragQuestion()).subscribe({
+      next: answer => this.ragResult.set(
+        (answer.grounded ? 'Grounded' : 'Evidence fallback') + ' · ' + answer.answer + '\n' +
+        'Citas: ' + (answer.citations.join(', ') || 'ninguna') + ' · estrategia: ' + answer.strategy + '\n' +
+        'Motivo: ' + answer.reasons.join(' ')),
+      error: () => this.ragResult.set('No se pudo consultar RAG. Verificá Spring Boot en :8080.')
+    });
+  }
+
+  protected challengeFor(moduleId: string): Challenge {
+    return this.challenges[moduleId] ?? {
+      question: '¿Qué práctica vuelve este componente verificable y mantenible?',
+      options: ['Confiar en resultados visuales', 'Definir contrato, prueba y métrica', 'Ocultar los errores'],
+      correct: 1
+    };
   }
 
   private load(): void {

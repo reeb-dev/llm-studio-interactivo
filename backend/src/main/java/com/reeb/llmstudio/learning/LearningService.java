@@ -40,7 +40,19 @@ public class LearningService {
         new LearningModule("upsert", "UPSERT y claves naturales", "datos", 15),
         new LearningModule("saga", "Saga Pattern", "consistencia", 16),
         new LearningModule("angular", "Angular: frontend confiable", "frontend", 17),
-        new LearningModule("self-rag", "Self-RAG: recuperar, criticar y responder", "conocimiento", 18)
+        new LearningModule("self-rag", "Self-RAG: recuperar, criticar y responder", "conocimiento", 18),
+        new LearningModule("ai-foundations", "Fundamentos de IA y probabilidad", "ia", 19),
+        new LearningModule("supervised-learning", "Machine Learning supervisado", "ml", 20),
+        new LearningModule("neural-networks", "Redes neuronales y entrenamiento", "ml", 21),
+        new LearningModule("transformers", "Transformers y atención", "llm", 22),
+        new LearningModule("embeddings", "Embeddings y bases vectoriales", "conocimiento", 23),
+        new LearningModule("agents-mcp", "Agentes, tools y MCP", "agentes", 24),
+        new LearningModule("multimodal", "IA multimodal", "llm", 25),
+        new LearningModule("fine-tuning", "Fine-tuning, adapters y routing", "mlops", 26),
+        new LearningModule("mlops", "MLOps, datos y despliegue", "operación", 27),
+        new LearningModule("ai-governance", "Seguridad, ética y gobierno de IA", "gobierno", 28),
+        new LearningModule("ai-evals", "Evaluaciones de modelos y productos IA", "calidad", 29),
+        new LearningModule("ai-capstone", "Proyecto integrador de IA", "proyecto", 30)
     ).forEach(modules::save);
   }
   @Transactional(readOnly = true) public List<LearningDtos.ModuleResponse> modules() { return modules.findAllByOrderByPositionAsc().stream().map(m -> new LearningDtos.ModuleResponse(m.getId(),m.getTitle(),m.getCategory(),m.getPosition())).toList(); }

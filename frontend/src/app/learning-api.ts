@@ -5,6 +5,10 @@ export interface LearningModule { id: string; title: string; category: string; p
 export interface Progress { learnerId: string; completedModuleIds: string[]; }
 export interface ChallengeResult { correct: boolean; feedback: string; }
 export interface SelfRagReview { grounded: boolean; answer: string; validCitations: string[]; reasons: string[]; }
+export interface RagAnswer {
+  answer: string; grounded: boolean; evidence: { id: string; content: string }[];
+  citations: string[]; reasons: string[]; strategy: string;
+}
 
 @Injectable({ providedIn: 'root' })
 export class LearningApi {
@@ -20,5 +24,8 @@ export class LearningApi {
       citations,
       evidence: [{ id: 'retry-policy', content: 'Usar backoff exponencial con jitter para fallos transitorios.' }]
     });
+  }
+  askRag(question: string) {
+    return this.http.post<RagAnswer>(this.baseUrl + '/rag/ask', { question, topK: 3 });
   }
 }

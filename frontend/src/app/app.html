@@ -22,7 +22,7 @@
           <h2>{{ module.title }}</h2>
           <p>Este módulo se sirve desde la API Spring y su reto se valida del lado del servidor. El resultado correcto persiste por learner en H2.</p>
           <div class="contract"><strong>Contrato API</strong><code>GET /api/modules · POST /api/challenges/validate · PUT /api/progress</code></div>
-          @if (challenges[module.id]; as challenge) {
+          @if (challengeFor(module.id); as challenge) {
             <section class="challenge">
               <h3>Mini-reto</h3><p>{{ challenge.question }}</p>
               <div class="answers">
@@ -30,12 +30,21 @@
               </div>
               <output>{{ feedback() }}</output>
             </section>
-          } @else { <p class="todo">Reto de este módulo pendiente de cargar en la API. La estructura ya admite agregarlo sin cambiar el frontend.</p> }
+          }
           @if (module.id === 'self-rag') {
             <section class="challenge">
               <h3>Verificador Self-RAG</h3>
               <p>Probá una respuesta con evidencia recuperada y otra sin citas. La API decide si puede mostrarse o debe hacer <code>evidence-fallback</code>.</p>
               <div class="answers"><button (click)="reviewSelfRag(true)">Revisar con cita válida</button><button (click)="reviewSelfRag(false)">Revisar sin citas</button></div>
+            </section>
+          }
+          @if (module.id === 'rag') {
+            <section class="challenge">
+              <h3>RAG ejecutable · corpus local</h3>
+              <p>El MVP usa ranking lexical; la respuesta pasa luego por el verificador Self-RAG de citas.</p>
+              <input [value]="ragQuestion()" (input)="setRagQuestion($any($event.target).value)" aria-label="Pregunta para el corpus">
+              <div class="answers"><button (click)="askRag()">Buscar evidencia</button></div>
+              <output>{{ ragResult() }}</output>
             </section>
           }
         </article>

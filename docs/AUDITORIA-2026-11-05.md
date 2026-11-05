@@ -23,6 +23,14 @@ El verificador es deliberadamente determinista y limitado: exige evidencia recup
 4. **El verificador no evalúa semántica.** Todavía no hay ingesta, embeddings, vector store, reindexado, corpus por tenant ni evaluación automática de groundedness. Es el siguiente incremento, no una promesa ya cumplida.
 5. **Editor de Pages es sandbox.** Comprueba criterios pedagógicos y no escribe en Git/GitHub ni ejecuta Java en el navegador. Los cambios reales se hacen en `frontend/` y `backend/`, con sus builds/tests.
 
+## Actualización posterior
+
+- Se añadió RAG lexical ejecutable, con evidencia, citas y fallback validado por Self-RAG.
+- Se añadió Docker Compose para PostgreSQL y Flyway con una migración inicial.
+- Se añadió un perfil postgres que activa Spring Security Resource Server cuando existe un emisor JWT real.
+- Se agregó traceId a cada respuesta HTTP y un workflow de calidad para backend, Angular y laboratorio estático.
+- Los puntos históricos de arriba se conservan como auditoría inicial; esta sección representa el estado actual.
+
 ## Próximo corte recomendado
 
 1. Añadir Spring Security como resource server y pruebas de autorización.

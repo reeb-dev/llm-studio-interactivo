@@ -26,7 +26,7 @@ Abrí `http://localhost:8000`.
 
 ## Ruta de aprendizaje
 
-La aplicación incluye 18 laboratorios interactivos. Cada uno presenta una decisión de diseño, una implementación mínima, fallos observables y un criterio de aceptación.
+La aplicación incluye 30 laboratorios interactivos. Cada uno presenta una decisión de diseño, una implementación mínima, fallos observables y un criterio de aceptación.
 
 1. Arquitectura de un sistema LLM
 2. Contexto, prompts y memoria
@@ -46,8 +46,41 @@ La aplicación incluye 18 laboratorios interactivos. Cada uno presenta una decis
 16. Saga Pattern
 17. Angular para frontend confiable
 18. Self-RAG: recuperar, criticar y responder con evidencia
+19. Fundamentos de IA, datos y probabilidad
+20. Machine Learning supervisado
+21. Redes neuronales y entrenamiento
+22. Transformers, tokens y atención
+23. Embeddings y bases vectoriales
+24. Agentes, tools y MCP
+25. IA multimodal
+26. Fine-tuning, adapters y routing
+27. MLOps: datos, modelos y despliegue
+28. Seguridad, ética y gobierno de IA
+29. Evaluaciones de modelos y productos IA
+30. Proyecto integrador de IA
 
 Leé la [guía de patrones y prácticas](/docs/ruta-de-aprendizaje.md) antes de implementar un flujo real.
+Para el recorrido completo, usá el [temario ampliado de IA](/docs/temario-ia.md).
+
+## Entorno con PostgreSQL y JWT
+
+    docker compose up -d postgres
+    cd backend
+    SPRING_PROFILES_ACTIVE=postgres JWT_ISSUER_URI=https://issuer.example.com mvn spring-boot:run
+
+Flyway aplica migraciones SQL y el perfil postgres activa Spring Security como resource server JWT. El perfil local queda abierto sólo para aprender y probar; no representa una API protegida.
+
+## RAG ejecutable
+
+POST /api/rag/ask implementa un MVP de retrieval lexical sobre un corpus acotado y luego pasa su respuesta por el verificador Self-RAG. Expone evidencia, citas, razones y estrategia lexical-v1. No es todavía una base vectorial/híbrida ni un deployment multi-tenant.
+
+    curl -X POST http://localhost:8080/api/rag/ask -H 'Content-Type: application/json' -d '{"question":"¿Cómo funcionan los reintentos?","topK":3}'
+
+## Verificación
+
+    cd backend && mvn test
+    cd ../frontend && NG_BUILD_MAX_WORKERS=2 npm run build
+    node --check ../dist/app.js
 
 ## Contrato de aprendizaje
 

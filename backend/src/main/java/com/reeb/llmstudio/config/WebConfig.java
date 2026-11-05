@@ -1,6 +1,9 @@
 package com.reeb.llmstudio.config;
 
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -11,5 +14,18 @@ public class WebConfig implements WebMvcConfigurer {
         .allowedOrigins("http://localhost:4200", "http://127.0.0.1:4200", "https://reeb-dev.github.io")
         .allowedMethods("GET", "POST", "PUT")
         .allowedHeaders("Content-Type", "Authorization");
+  }
+
+  @Bean
+  UrlBasedCorsConfigurationSource corsConfigurationSource() {
+    var configuration = new CorsConfiguration();
+    configuration.setAllowedOrigins(java.util.List.of(
+        "http://localhost:4200", "http://127.0.0.1:4200", "https://reeb-dev.github.io"));
+    configuration.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "OPTIONS"));
+    configuration.setAllowedHeaders(java.util.List.of("Content-Type", "Authorization", TraceIdFilter.HEADER));
+    configuration.setExposedHeaders(java.util.List.of(TraceIdFilter.HEADER));
+    var source = new UrlBasedCorsConfigurationSource();
+    source.registerCorsConfiguration("/**", configuration);
+    return source;
   }
 }

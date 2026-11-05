@@ -18,4 +18,14 @@ public final class LearningDtos {
       @NotNull List<@Valid Evidence> evidence,
       List<@NotBlank String> citations) { }
   public record SelfRagReviewResponse(boolean grounded, String answer, List<String> validCitations, List<String> reasons) { }
+  public record RagAskRequest(@NotBlank String question, Integer topK) {
+    public int topKOrDefault() { return topK == null ? 3 : Math.max(1, Math.min(topK, 3)); }
+  }
+  public record RagAnswerResponse(
+      String answer,
+      boolean grounded,
+      List<Evidence> evidence,
+      List<String> citations,
+      List<String> reasons,
+      String strategy) { }
 }

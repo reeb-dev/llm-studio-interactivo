@@ -2,8 +2,10 @@ package com.reeb.llmstudio.learning;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 @Entity
+@Table(name = "learning_modules")
 public class LearningModule {
   @Id private String id;
   private String title;

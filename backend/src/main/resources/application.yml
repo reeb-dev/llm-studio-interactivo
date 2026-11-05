@@ -5,7 +5,7 @@ spring:
     url: jdbc:h2:mem:llmstudio;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     open-in-view: false
   h2:
     console:
@@ -15,3 +15,6 @@ management:
     web:
       exposure:
         include: health,info
+app:
+  security:
+    enabled: false
