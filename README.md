@@ -2,7 +2,21 @@
 
 Laboratorio en español para aprender los patrones que hacen que una integración con LLM sea un sistema de producción: arquitectura, conocimiento, seguridad, consistencia, operación y frontend Angular.
 
-## Ejecutar localmente
+## Aplicación full-stack
+
+`frontend/` es una aplicación Angular standalone: consume módulos, envía respuestas de retos y guarda el avance por learner. `backend/` es una API Spring Boot con validación, JPA/H2, CORS y endpoints para módulos, retos y progreso.
+
+```bash
+# terminal 1
+cd backend && mvn spring-boot:run
+
+# terminal 2
+cd frontend && npm start
+```
+
+La UI queda en `http://localhost:4200` y la API en `http://localhost:8080`. GitHub Pages compila y publica el frontend; para producción, el `baseUrl` de Angular deberá apuntar a un host real de Spring Boot, ya que Pages no ejecuta Java.
+
+## Versión estática previa
 
 ```bash
 python3 -m http.server 8000 --directory dist

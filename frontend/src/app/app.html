@@ -1,0 +1,38 @@
+<main>
+  <header>
+    <div><span class="eyebrow">LLM STUDIO · FULL STACK LAB</span><h1>Aprendé patrones, probalos y guardá tu avance.</h1></div>
+    <div class="status" [class.offline]="status().startsWith('API no')">{{ status() }}</div>
+  </header>
+  @if (loading()) {
+    <p class="loading">Cargando módulos desde Spring Boot…</p>
+  } @else {
+    <section class="layout">
+      <aside class="modules" aria-label="Módulos del laboratorio">
+        <div class="progress"><span>PROGRESO</span><strong>{{ progress() }} módulos</strong></div>
+        @for (module of modules(); track module.id) {
+          <button class="module" [class.active]="selected()?.id === module.id" (click)="select(module)">
+            <span>{{ module.position }}</span>{{ module.title }}
+            @if (completed().has(module.id)) { <b>✓</b> }
+          </button>
+        }
+      </aside>
+      @if (selected(); as module) {
+        <article class="lab">
+          <span class="eyebrow">{{ module.category }}</span>
+          <h2>{{ module.title }}</h2>
+          <p>Este módulo se sirve desde la API Spring y su reto se valida del lado del servidor. El resultado correcto persiste por learner en H2.</p>
+          <div class="contract"><strong>Contrato API</strong><code>GET /api/modules · POST /api/challenges/validate · PUT /api/progress</code></div>
+          @if (challenges[module.id]; as challenge) {
+            <section class="challenge">
+              <h3>Mini-reto</h3><p>{{ challenge.question }}</p>
+              <div class="answers">
+                @for (option of challenge.options; track option; let index = $index) { <button (click)="answer(index)">{{ option }}</button> }
+              </div>
+              <output>{{ feedback() }}</output>
+            </section>
+          } @else { <p class="todo">Reto de este módulo pendiente de cargar en la API. La estructura ya admite agregarlo sin cambiar el frontend.</p> }
+        </article>
+      }
+    </section>
+  }
+</main>
