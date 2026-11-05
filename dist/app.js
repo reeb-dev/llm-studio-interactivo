@@ -56,6 +56,9 @@ try{completed=new Set(JSON.parse(localStorage.getItem('llm-studio-progress')||'[
 $('#clear-events').onclick=()=>{events=[];$('#events').innerHTML='<div class="event">Sin eventos todavía.</div>'};$('#reset-button').onclick=()=>{completed.clear();persist();events=[];select('architecture');log('Progreso y laboratorio reiniciados')};select(active);log('Ruta ampliada: 17 patrones con retos y progreso persistente.','good');
 
 // El explorador refleja el proyecto que vive en este repositorio: código real y documentación Markdown.
+const interactiveStyle=document.createElement('style');
+interactiveStyle.textContent='.code-editor{width:100%;min-height:310px;resize:vertical;border:0;margin:0;padding:16px;background:#0b0f18;color:#d9e0ec;font:12px/1.75 DM Mono,monospace;tab-size:2;outline:0}.editor-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:11px}.editor-actions button{border:1px solid #39445b;background:#182031;color:#dce4ef;border-radius:6px;padding:8px 10px;font:700 10px Manrope;cursor:pointer}.editor-actions button.primary{background:var(--lime);border-color:var(--lime);color:#11170c}.test-result{margin-top:11px;font:11px/1.6 DM Mono,monospace;border:1px solid #30384c;border-radius:6px;padding:10px;color:#bac4d5}.test-result.good{border-color:#55773a;color:#c9ed97}.test-result.bad{border-color:#845d37;color:#ffca91}.contract-list{display:grid;gap:8px;margin:15px 0}.contract-list div{background:#121723;border:1px solid #292f40;border-radius:7px;padding:11px}.contract-list strong{display:block;font:10px DM Mono,monospace;color:var(--blue);margin-bottom:4px}.contract-list span{font-size:12px;color:#b8c0d0;line-height:1.45}';
+document.head.append(interactiveStyle);
 const lessonSelect=select;
 let activeSource='controller';
 const sourceFiles={
@@ -78,14 +81,36 @@ function projectNav(){
 }
 nav=projectNav;
 select=id=>{activeSource='';lessonSelect(id)};
-function sourceLab(f){return '<p class="lab-copy">Seguimiento interactivo de una petición.</p><div class="prompt-box"><b>FLUJO DEL ARCHIVO</b><br><span id="trace-step">Listo para iniciar desde el borde.</span></div><div id="result" class="json-box">Elegí “siguiente paso” y recorré cómo este archivo conversa con el resto del sistema.</div><button class="lab-action" id="run">Siguiente paso →</button><div class="callout" style="margin-top:14px"><strong>Ejercicio real.</strong><p style="margin:8px 0">'+(f.file==='LearningController.java'?'Agregá GET /api/modules/{id} y mantené la regla de negocio en el servicio.':f.file==='auth.interceptor.ts'?'¿Qué debería hacer la UI ante un 401 sin convertir al interceptor en autorización?':'Explicá qué dato entra y qué dato sale de esta capa antes de modificarla.')+'</p></div>'}
+function sourceLab(f){
+  const escaped=f.code.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return '<p class="lab-copy">Editá el fragmento y verificá el contrato. El sandbox no modifica el repositorio ni simula seguridad real: enseña qué prueba deberías correr localmente.</p><div class="codeblock"><div class="codehead">EDITOR · cambio temporal</div><textarea class="code-editor" id="code-editor" spellcheck="false">'+escaped+'</textarea></div><div class="editor-actions"><button class="primary" id="run-test">▶ Ejecutar prueba</button><button id="run-request">⇢ Probar contrato HTTP</button><button id="add-fix">+ Insertar pista</button><button id="reset-code">↺ Restaurar archivo</button></div><div id="test-result" class="test-result">Cambios locales del sandbox: todavía no ejecutaste una verificación.</div><div class="callout" style="margin-top:14px"><strong>Desafío real.</strong><p style="margin:8px 0">'+(f.file==='LearningController.java'?'Agregá GET /api/modules/{id}; escribí un test MockMvc que pruebe 200 y 404.':f.file==='auth.interceptor.ts'?'Definí cómo redirigir ante un 401 sin convertir al interceptor en autorización.':'Explicá qué dato entra, qué dato sale y qué error debe devolver esta capa.')+'</p></div>'
+}
+const sourceRules={
+  'LearningController.java':{need:['@RestController','service.'],test:'MockMvc: GET /api/modules devuelve 200 y una lista JSON.'},
+  'LearningService.java':{need:['@Transactional','progress.save'],test:'JUnit: completar dos veces el mismo módulo conserva un único registro de progreso.'},
+  'LearningModule.java':{need:['@Entity','@Id'],test:'JPA: la entidad se persiste y se recupera por id.'},
+  'WebConfig.java':{need:['allowedOrigins','/api/**'],test:'Integración: un origen permitido recibe cabeceras CORS; uno ajeno no.'},
+  'app.ts':{need:['signal','this.api.validate'],test:'Angular: una respuesta correcta actualiza completed y muestra feedback.'},
+  'learning-api.ts':{need:['HttpClient','/api/modules'],test:'HttpTestingController: verifica método GET, URL y tipo de respuesta.'},
+  'auth.interceptor.ts':{need:['Authorization','request.clone'],test:'Interceptor: agrega Bearer solo cuando existe token; nunca autoriza por sí mismo.'},
+  'app.config.ts':{need:['provideHttpClient','withInterceptors'],test:'Bootstrap: HttpClient se inyecta y el interceptor queda registrado.'}
+};
+function contractCards(f){
+  const rule=sourceRules[f.file];
+  return '<h2>Contrato operativo</h2><div class="contract-list"><div><strong>ENTRADA</strong><span>'+f.trace[0]+'</span></div><div><strong>SALIDA / EFECTO</strong><span>'+f.trace[f.trace.length-1]+'</span></div><div><strong>DEPENDENCIA</strong><span>'+f.trace.slice(1,-1).join(' → ')+'</span></div><div><strong>PRUEBA QUE LO DEMUESTRA</strong><span>'+rule.test+'</span></div></div>';
+}
 function openSource(id){
   activeSource=id;const f=sourceFiles[id];
   $('#tab-label').textContent=f.file;$('#crumb-folder').textContent=f.path;$('#crumb-file').textContent=f.file;$('#scenario-label').textContent='flujo de código';
   const safeCode=f.code.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  $('#document').innerHTML='<div class="eyebrow">PROYECTO REAL · '+f.lang+'</div><h1>'+f.file+'</h1><p class="lead">'+f.role+'</p><div class="callout"><strong>'+f.pattern+'</strong><br>'+f.definition+'</div><h2>Implementación</h2>'+box(f.lang,safeCode)+'<h2>Cómo leer este archivo</h2><div class="definition-grid"><div class="definition"><span>RESPONSABILIDAD</span><b>Una capa, una razón de cambio</b><p>'+f.role+'</p></div><div class="definition"><span>CONEXIÓN</span><b>Contrato explícito</b><p>Usá el playground para seguir el dato a través de las capas.</p></div></div><div class="next-step"><span>¿Querés la teoría del patrón? Abrí un archivo de <b>docs/</b> en el explorador.</span></div>';
-  $('#visual-lab').innerHTML=sourceLab(f);projectNav();let step=0;
-  $('#run').onclick=()=>{const current=f.trace[step%f.trace.length];$('#trace-step').textContent=String(step+1).padStart(2,'0')+' · '+current;$('#result').textContent=step===f.trace.length-1?'Flujo completado: '+f.trace.join(' → '):'La petición llegó a: '+current;$('#result').className='json-box '+(step===f.trace.length-1?'success':'');$('#status-text').textContent=current;log(f.file+': '+current,step===f.trace.length-1?'good':'');step++};
+  $('#document').innerHTML='<div class="eyebrow">PROYECTO REAL · '+f.lang+'</div><h1>'+f.file+'</h1><p class="lead">'+f.role+'</p><div class="callout"><strong>'+f.pattern+'</strong><br>'+f.definition+'</div><h2>Implementación actual</h2>'+box(f.lang,safeCode)+'<h2>Cómo leer este archivo</h2><div class="definition-grid"><div class="definition"><span>RESPONSABILIDAD</span><b>Una capa, una razón de cambio</b><p>'+f.role+'</p></div><div class="definition"><span>DECISIÓN DE DISEÑO</span><b>Contrato explícito</b><p>El playground permite cambiar el fragmento y comprobar el criterio mínimo.</p></div></div>'+contractCards(f)+'<div class="next-step"><span>La edición de abajo es un sandbox. Para un cambio permanente, modificá el archivo homónimo del repositorio y corré su prueba.</span></div>';
+  $('#visual-lab').innerHTML=sourceLab(f);projectNav();
+  const editor=$('#code-editor'),result=$('#test-result'),rule=sourceRules[f.file];
+  const report=(message,ok)=>{result.textContent=message;result.className='test-result '+(ok?'good':'bad');$('#status-text').textContent=ok?'Prueba del sandbox aprobada':'Prueba del sandbox falló';log(f.file+': '+message,ok?'good':'warn')};
+  $('#run-test').onclick=()=>{const missing=rule.need.filter(part=>!editor.value.includes(part));report(missing.length?'FALLÓ · falta '+missing.join(' y ')+'. Criterio: '+rule.test:'PASÓ · contrato mínimo detectado. Siguiente prueba real: '+rule.test,!missing.length)};
+  $('#run-request').onclick=()=>{const endpoint=f.file==='LearningController.java'||f.file==='LearningService.java'||f.file==='LearningModule.java'?'GET /api/modules → 200 [{ id, title, category, position }]':f.file==='learning-api.ts'||f.file==='app.ts'?'Angular llama GET http://localhost:8080/api/modules y modela loading/error.':f.file==='auth.interceptor.ts'?'Request saliente: Authorization: Bearer <token>; Spring decide 200, 401 o 403.':f.file==='WebConfig.java'?'Preflight CORS: solo origen permitido + GET/POST/PUT para /api/**.':'Bootstrap registra HttpClient y aplica authInterceptor a cada request.';report('CONTRATO · '+endpoint,true)};
+  $('#add-fix').onclick=()=>{const missing=rule.need.find(part=>!editor.value.includes(part));if(!missing)return report('No hace falta pista: el criterio mínimo ya está presente.',true);editor.value+='\\n// PISTA DEL LABORATORIO: '+missing;report('Se insertó una pista temporal. Leé por qué '+missing+' pertenece a esta capa y ejecutá otra vez.',false)};
+  $('#reset-code').onclick=()=>{editor.value=f.code;report('Archivo del sandbox restaurado; el repositorio no fue modificado.',true)};
   log('Archivo abierto: '+f.path+'/'+f.file);
 }
 openSource(activeSource);
