@@ -26,7 +26,7 @@ Abrí `http://localhost:8000`.
 
 ## Ruta de aprendizaje
 
-La aplicación incluye 30 laboratorios interactivos. Cada uno presenta una decisión de diseño, una implementación mínima, fallos observables y un criterio de aceptación.
+La aplicación incluye 30 laboratorios interactivos. Cada uno presenta una decisión de diseño, una implementación mínima, fallos observables, un criterio de aceptación y un caso de uso sintético pero realista con la evidencia que debería verificarse. El buscador de la barra lateral (o `⌘/Ctrl + K`) encuentra módulos por tecnología, patrón, riesgo, código o caso práctico.
 
 1. Arquitectura de un sistema LLM
 2. Contexto, prompts y memoria
